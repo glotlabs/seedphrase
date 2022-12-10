@@ -1,0 +1,14 @@
+[package]
+name = "seedphrase_wasm"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+seedphrase_core = { path = "../seedphrase_core" }
+poly = { git = "https://github.com/glotlabs/poly-rs" }
+poly_macro = { git = "https://github.com/glotlabs/poly-rs" }
+serde = { version = "1.0.137", features = ["derive"] }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }

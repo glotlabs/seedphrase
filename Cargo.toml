@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "seedphrase_cli",
+    "seedphrase_core",
+    "seedphrase_wasm",
+]
