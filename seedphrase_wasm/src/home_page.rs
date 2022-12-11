@@ -4,6 +4,9 @@ use poly_macro::impl_wasm_page;
 use seedphrase_core::home_page;
 use wasm_bindgen::prelude::*;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 #[wasm_bindgen]
 pub struct HomePage(home_page::HomePage);
 
