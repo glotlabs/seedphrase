@@ -22,7 +22,7 @@
     },
     "homepage": "https://github.com/glotlabs/poly-templates#readme",
     "dependencies": {
-      "poly": "file:../../poly-js"
+      "poly": "git+https://github.com/glotlabs/poly-js.git"
     },
     "devDependencies": {
       "@tailwindcss/forms": "^0.5.2",
