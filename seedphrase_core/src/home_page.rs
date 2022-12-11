@@ -110,6 +110,7 @@ pub enum AppEffect {}
 fn view_head() -> maud::Markup {
     html! {
         title { "Seed phrase to address" }
+        meta name="viewport" content="width=device-width, initial-scale=1";
         link rel="stylesheet" href="/app.css";
         script defer type="module" src="/home_page.js" {}
     }
