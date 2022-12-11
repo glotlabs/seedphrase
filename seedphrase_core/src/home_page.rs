@@ -47,7 +47,7 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
     fn subscriptions(&self, _model: &Model) -> browser::Subscriptions<Msg, AppEffect> {
         vec![
             browser::on_input(Id::Mnemonic, Msg::MnemonicChanged),
-            browser::on_submit(Id::Form, Msg::CheckClicked),
+            browser::on_submit(Id::Form, Msg::FormSubmitted),
         ]
     }
 
@@ -58,7 +58,7 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
                 Ok(vec![])
             }
 
-            Msg::CheckClicked => {
+            Msg::FormSubmitted => {
                 model.rows.push(Row {
                     mnemonic: model.mnemonic.clone(),
                     result: mnemonic::to_address(&model.mnemonic),
@@ -100,7 +100,7 @@ enum Id {
 #[serde(rename_all = "camelCase")]
 pub enum Msg {
     MnemonicChanged(Capture<String>),
-    CheckClicked,
+    FormSubmitted,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -109,7 +109,7 @@ pub enum AppEffect {}
 
 fn view_head() -> maud::Markup {
     html! {
-        title { "Home Page" }
+        title { "Seed phrase to address" }
         link rel="stylesheet" href="/app.css";
         script defer type="module" src="/home_page.js" {}
     }
@@ -238,7 +238,7 @@ pub fn view_row(row: &Row) -> Markup {
 fn view_mnemonic(mnemonic: &str) -> Markup {
     html! {
         @for chunk in chunk_mnemonic(mnemonic) {
-            div class="" {
+            div {
                 (chunk)
             }
         }
