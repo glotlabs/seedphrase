@@ -6,7 +6,7 @@ on:
 env:
   PROJECT_NAME: seedphrase
   WASM_PACK_URL: https://github.com/rustwasm/wasm-pack/releases/download/v0.10.3/wasm-pack-v0.10.3-x86_64-unknown-linux-musl.tar.gz
-  POLYESTER_CLI_URL: https://github.com/polyester-web/polyester-cli/releases/download/0.1.0-alpha6/poly_linux-x64.tar.gz
+  POLY_CLI_URL: https://github.com/glotlabs/poly-cli/releases/download/0.1.0-alpha7/poly_linux-x64.tar.gz
 
 jobs:
   deploy:
@@ -34,10 +34,10 @@ jobs:
           tar -zxf wasm-pack.tar.gz --directory ${HOME}/bin --strip 1 --no-anchored --wildcards wasm-pack
           rm wasm-pack.tar.gz
 
-      - name: Install polyester-cli
+      - name: Install poly-cli
         run: |
           mkdir -p ${HOME}/bin
-          wget --quiet -O poly.tar.gz $POLYESTER_CLI_URL
+          wget --quiet -O poly.tar.gz $POLY_CLI_URL
           tar -zxf poly.tar.gz --directory ${HOME}/bin poly
           rm poly.tar.gz
 
