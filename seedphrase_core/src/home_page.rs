@@ -16,7 +16,14 @@ use url::Url;
 #[serde(rename_all = "camelCase")]
 pub struct Model {
     pub mnemonic: String,
-    pub address: String,
+    pub rows: Vec<Row>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Row {
+    pub mnemonic: String,
+    pub result: Result<String, String>,
 }
 
 pub struct HomePage {
@@ -31,7 +38,7 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
     fn init(&self) -> (Model, Effects<Msg, AppEffect>) {
         let model = Model {
             mnemonic: Default::default(),
-            address: Default::default(),
+            rows: Default::default(),
         };
 
         let effects = vec![];
@@ -51,12 +58,17 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
         match msg {
             Msg::MnemonicChanged(captured) => {
                 model.mnemonic = captured.value();
-                model.address = String::new();
                 Ok(vec![])
             }
 
             Msg::CheckClicked => {
-                model.address = mnemonic::to_address(&model.mnemonic);
+                model.rows.push(Row {
+                    mnemonic: model.mnemonic.clone(),
+                    result: mnemonic::to_address(&model.mnemonic),
+                });
+
+                model.mnemonic = String::new();
+
                 Ok(vec![])
             }
         }
@@ -74,7 +86,7 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
     }
 
     fn render_page(&self, markup: PageMarkup<Markup>) -> String {
-        page::render_page_maud(markup)
+        render_page(markup)
     }
 }
 
@@ -107,40 +119,152 @@ fn view_head() -> maud::Markup {
 }
 
 fn view_body(model: &Model) -> maud::Markup {
-    //html! {
-    //    div id=(Id::Seedphrase) {
-    //        input id=(Id::Mnemonic) value=(model.mnemonic) type="text" {}
-    //        div class="flex p-4" {
-    //            (model.address)
-    //        }
-    //    }
-    //}
-
     html! {
-        div id=(Id::Seedphrase) class="mt-5 md:col-span-2 md:mt-0" {
-            form id=(Id::Form) {
-                div class="overflow-hidden shadow sm:rounded-md" {
-                    div class="bg-white px-4 py-5 sm:p-6" {
-                        div class="grid grid-cols-6 gap-6" {
-                            div class="col-span-6" {
-                                label class="block text-sm font-medium text-gray-700" for=(Id::Mnemonic){
-                                    "Seed phrase"
-                                }
-                                input id=(Id::Mnemonic) value=(model.mnemonic) class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" type="text" name="street-address" autocomplete="street-address";
-                            }
+        div id=(Id::Seedphrase) class="sm:pt-8 mx-auto max-w-7xl sm:px-6 lg:px-8" {
+            div class="divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow" {
+                div class="px-4 py-5 sm:px-6" {
+                    (view_input(model))
+                    p class="mt-2" {
+                        div class=" text-xs text-gray-500" {
+                            "Enter a bip39 mnemonic and you will get back it's first ethereum wallet address."
+                        }
+                        div class=" text-xs text-gray-500" {
+                            "Although everything happens client-side you should never enter a seed phrase that contain any valuables."
                         }
                     }
-                    div class="bg-gray-50 px-4 py-3 text-right sm:px-6" {
-                        button id=(Id::Check) class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" type="submit" {
-                            "Check"
+                }
+
+                div {
+                    @if !model.rows.is_empty() {
+                        (view_table(model))
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+fn view_input(model: &Model) -> Markup {
+    html! {
+        form id=(Id::Form) {
+            label class="mb-1 block text-sm font-medium text-gray-700" for=(Id::Mnemonic) {
+                "Seed phrase"
+            }
+
+            div class="flex items-center" {
+                input id=(Id::Mnemonic) value=(model.mnemonic) class="text-xl block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" type="text";
+
+                button id=(Id::Check) class="whitespace-nowrap h-11 items-center ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" type="submit" {
+                    "Get Address"
+                }
+            }
+        }
+    }
+}
+
+fn view_table(model: &Model) -> Markup {
+    html! {
+        div class="px-4 sm:px-6 lg:px-8" {
+            div class="flex flex-col" {
+                div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8" {
+                    div class="inline-block min-w-full py-2 align-middle" {
+                        div class="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5" {
+                            table class="min-w-full divide-y divide-gray-300" {
+                                thead class="bg-gray-50" {
+                                    tr {
+                                        th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8" scope="col" {
+                                            "Seed phrase"
+                                        }
+                                        th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900" scope="col" {
+                                            "Address"
+                                        }
+                                        th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900" scope="col" {
+                                            "Status"
+                                        }
+                                    }
+                                }
+                                tbody class="divide-y divide-gray-200 bg-white" {
+                                    @for row in &model.rows {
+                                        (view_row(row))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+}
 
-           p {
-                (model.address)
+pub fn view_row(row: &Row) -> Markup {
+    match &row.result {
+        Ok(address) => {
+            html! {
+                tr {
+                    td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6 lg:pl-8" {
+                        (view_mnemonic(&row.mnemonic))
+                    }
+                    td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900" {
+                        (address)
+                    }
+                    td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" {
+                        div class="text-green-500 w-10 h-10" {
+                            (heroicons_maud::check_circle_outline())
+                        }
+                    }
+                }
+            }
+        }
+
+        Err(err) => {
+            html! {
+                tr {
+                    td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6 lg:pl-8" {
+                        (view_mnemonic(&row.mnemonic))
+                    }
+                    td class="px-3 py-4 text-sm text-gray-500" {
+                        (err)
+                    }
+                    td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" {
+                        div class="text-red-500 w-10 h-10" {
+                            (heroicons_maud::exclamation_circle_outline())
+                        }
+                    }
+                }
             }
         }
     }
+}
+
+fn view_mnemonic(mnemonic: &str) -> Markup {
+    html! {
+        @for chunk in chunk_mnemonic(mnemonic) {
+            div class="" {
+                (chunk)
+            }
+        }
+    }
+}
+
+pub fn render_page(markup: PageMarkup<Markup>) -> String {
+    (html! {
+        (maud::DOCTYPE)
+        html class="h-full bg-gray-100" {
+            head {
+                meta charset="utf-8";
+                (markup.head)
+            }
+            body class="h-full" {
+                (markup.body)
+            }
+        }
+    })
+    .into_string()
+}
+
+fn chunk_mnemonic(mnemonic: &str) -> Vec<String> {
+    let parts: Vec<_> = mnemonic.split_whitespace().collect();
+    parts.chunks(6).map(|chunk| chunk.join(" ")).collect()
 }

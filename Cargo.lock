@@ -1076,6 +1076,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "heroicons_maud"
+version = "0.1.0"
+source = "git+https://github.com/glotlabs/heroicons-maud#4b4c8ae3406fdf1d3a98ee68b6b5bae401a7849b"
+dependencies = [
+ "maud",
+]
+
+[[package]]
 name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1966,6 +1974,7 @@ name = "seedphrase_core"
 version = "0.1.0"
 dependencies = [
  "ethers",
+ "heroicons_maud",
  "maud",
  "poly",
  "poly_macro",
