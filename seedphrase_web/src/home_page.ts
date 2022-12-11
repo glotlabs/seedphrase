@@ -1,5 +1,4 @@
-import init from "../wasm/seedphrase.js";
-import { homePage } from "../wasm/seedphrase";
+import init, { homePage } from "../wasm/seedphrase";
 import { Poly } from "poly";
 
 (async () => {
