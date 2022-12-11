@@ -5,8 +5,6 @@ use poly::browser;
 use poly::browser::Capture;
 use poly::browser::DomId;
 use poly::browser::Effects;
-use poly::browser::Value;
-use poly::page;
 use poly::page::Page;
 use poly::page::PageMarkup;
 use serde::{Deserialize, Serialize};
@@ -23,7 +21,7 @@ pub struct Model {
 #[serde(rename_all = "camelCase")]
 pub struct Row {
     pub mnemonic: String,
-    pub result: Result<String, String>,
+    pub result: Result<String, mnemonic::Error>,
 }
 
 pub struct HomePage {
@@ -49,7 +47,6 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
     fn subscriptions(&self, _model: &Model) -> browser::Subscriptions<Msg, AppEffect> {
         vec![
             browser::on_input(Id::Mnemonic, Msg::MnemonicChanged),
-            //browser::on_click(Id::Check, Msg::CheckClicked),
             browser::on_submit(Id::Form, Msg::CheckClicked),
         ]
     }
@@ -126,7 +123,7 @@ fn view_body(model: &Model) -> maud::Markup {
                     (view_input(model))
                     p class="mt-2" {
                         div class=" text-xs text-gray-500" {
-                            "Enter a bip39 mnemonic and you will get back it's first ethereum wallet address."
+                            "Enter a bip39 seed phrase (mnemonic) and you will get back it's first ethereum wallet address."
                         }
                         div class=" text-xs text-gray-500" {
                             "Although everything happens client-side you should never enter a seed phrase that contain any valuables."
@@ -210,7 +207,7 @@ pub fn view_row(row: &Row) -> Markup {
                         (address)
                     }
                     td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" {
-                        div class="text-green-500 w-10 h-10" {
+                        div class="text-green-500 w-8 h-8" {
                             (heroicons_maud::check_circle_outline())
                         }
                     }
@@ -225,10 +222,10 @@ pub fn view_row(row: &Row) -> Markup {
                         (view_mnemonic(&row.mnemonic))
                     }
                     td class="px-3 py-4 text-sm text-gray-500" {
-                        (err)
+                        (mnemonic_error_to_string(err))
                     }
                     td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500" {
-                        div class="text-red-500 w-10 h-10" {
+                        div class="text-red-500 w-8 h-8" {
                             (heroicons_maud::exclamation_circle_outline())
                         }
                     }
@@ -262,6 +259,33 @@ pub fn render_page(markup: PageMarkup<Markup>) -> String {
         }
     })
     .into_string()
+}
+
+fn mnemonic_error_to_string(err: &mnemonic::Error) -> String {
+    match err {
+        mnemonic::Error::InvalidPhrase => {
+            // fmt
+            format!("Error: not a valid seed phrase")
+        }
+
+        mnemonic::Error::InvalidWordCount(count) => {
+            // fmt
+            format!(
+                "Error: seed phrase contains {} words, expected 12, 15, 18, 21 or 24 words",
+                count
+            )
+        }
+
+        mnemonic::Error::InvalidWord(word) => {
+            // fmt
+            format!("Error: '{}' is not a valid bip39 word", word)
+        }
+
+        mnemonic::Error::Internal(msg) => {
+            // fmt
+            format!("Internal error: {}", msg)
+        }
+    }
 }
 
 fn chunk_mnemonic(mnemonic: &str) -> Vec<String> {
