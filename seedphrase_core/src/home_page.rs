@@ -10,6 +10,9 @@ use poly::page::PageMarkup;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+const EXAMPLE_MNEMONIC: &'static str =
+    "stove relax design safe deliver rigid height swamp know roof pitch innocent";
+
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Model {
@@ -48,6 +51,7 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
         vec![
             browser::on_input(Id::Mnemonic, Msg::MnemonicChanged),
             browser::on_submit(Id::Form, Msg::FormSubmitted),
+            browser::on_click(Id::ShowExample, Msg::ShowExampleClicked),
         ]
     }
 
@@ -65,6 +69,15 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
                 });
 
                 model.mnemonic = String::new();
+
+                Ok(vec![])
+            }
+
+            Msg::ShowExampleClicked => {
+                model.rows.push(Row {
+                    mnemonic: EXAMPLE_MNEMONIC.to_string(),
+                    result: mnemonic::to_address(EXAMPLE_MNEMONIC),
+                });
 
                 Ok(vec![])
             }
@@ -94,6 +107,7 @@ enum Id {
     Mnemonic,
     Check,
     Form,
+    ShowExample,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -101,6 +115,7 @@ enum Id {
 pub enum Msg {
     MnemonicChanged(Capture<String>),
     FormSubmitted,
+    ShowExampleClicked,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
@@ -135,6 +150,12 @@ fn view_body(model: &Model) -> maud::Markup {
                 div {
                     @if !model.rows.is_empty() {
                         (view_table(model))
+                    } @else {
+                        div class="py-8 flex items-center justify-center w-full" {
+                            button id=(Id::ShowExample) class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" type="button" {
+                                "Show Example"
+                            }
+                        }
                     }
                 }
             }
