@@ -14,4 +14,5 @@ fi
 if [[ "$event" == "after_asset_hash" || "$env" == "dev" ]]; then
     # Generate html
     ./target/$target/seedphrase_cli home_page > dist/index.html
+    echo "Not found" > dist/404.html
 fi
