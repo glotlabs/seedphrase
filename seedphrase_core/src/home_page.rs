@@ -225,7 +225,7 @@ fn view_table(model: &Model) -> Markup {
                                     }
                                 }
                                 tbody class="divide-y divide-gray-200 bg-white" {
-                                    @for row in &model.rows {
+                                    @for row in model.rows.iter().rev() {
                                         (view_row(row))
                                     }
                                 }
