@@ -58,7 +58,7 @@ impl Page<Model, Msg, AppEffect, Markup> for HomePage {
     fn update(&self, msg: &Msg, model: &mut Model) -> Result<Effects<Msg, AppEffect>, String> {
         match msg {
             Msg::MnemonicChanged(captured) => {
-                model.mnemonic = captured.value();
+                model.mnemonic = captured.value().replace("\t", " ");
                 Ok(vec![])
             }
 
